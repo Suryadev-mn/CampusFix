@@ -34,10 +34,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
+class DepartmentRelatedField(serializers.PrimaryKeyRelatedField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and not data.isdigit():
+            dept = Department.objects.filter(code__iexact=data).first()
+            if dept:
+                return dept
+            dept = Department.objects.filter(name__icontains=data).first()
+            if dept:
+                return dept
+        return super().to_internal_value(data)
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True, required=True)
-    department_id = serializers.PrimaryKeyRelatedField(
+    department_id = DepartmentRelatedField(
         queryset=Department.objects.all(), source='department', required=False, allow_null=True
     )
 

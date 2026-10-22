@@ -12,22 +12,36 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.NOTICE('Starting CampusFix database seeding...'))
 
-        # 1. Create Departments
+        # 1. Create Departments (Facility + Academic)
         departments_data = [
-            {'name': 'Electrical & Power Systems', 'code': 'ELEC', 'description': 'Maintenance of electrical wiring, sockets, lights, and air conditioning.'},
-            {'name': 'Plumbing & Water Facilities', 'code': 'PLUMB', 'description': 'Management of water supply, washrooms, leaks, and drainage systems.'},
-            {'name': 'IT & Campus Network', 'code': 'ITNET', 'description': 'Campus Wi-Fi routers, projectors, lab PCs, and network switches.'},
-            {'name': 'Civil & Furniture Works', 'code': 'CIVIL', 'description': 'Desks, chairs, doors, windows, paint, and masonry repairs.'},
-            {'name': 'Housekeeping & Sanitation', 'code': 'CLEAN', 'description': 'Campus cleanliness, waste disposal, floor scrubbing, and hygiene.'},
-            {'name': 'Laboratory Safety & Equipment', 'code': 'LAB', 'description': 'Chemical hoods, emergency eyewashes, lab equipment safety.'},
+            # Facility & Maintenance Departments (for Staff / Technicians)
+            {'name': 'Electrical & Power Systems', 'code': 'ELEC', 'category': 'facility', 'description': 'Maintenance of electrical wiring, sockets, lights, and air conditioning.'},
+            {'name': 'Plumbing & Water Facilities', 'code': 'PLUMB', 'category': 'facility', 'description': 'Management of water supply, washrooms, leaks, and drainage systems.'},
+            {'name': 'IT & Campus Network', 'code': 'ITNET', 'category': 'facility', 'description': 'Campus Wi-Fi routers, projectors, lab PCs, and network switches.'},
+            {'name': 'Civil & Furniture Works', 'code': 'CIVIL', 'category': 'facility', 'description': 'Desks, chairs, doors, windows, paint, and masonry repairs.'},
+            {'name': 'Housekeeping & Sanitation', 'code': 'CLEAN', 'category': 'facility', 'description': 'Campus cleanliness, waste disposal, floor scrubbing, and hygiene.'},
+            {'name': 'Laboratory Safety & Equipment', 'code': 'LAB', 'category': 'facility', 'description': 'Chemical hoods, emergency eyewashes, lab equipment safety.'},
+
+            # Academic Departments / Engineering Branches (for Students)
+            {'name': 'Computer Science & Engineering', 'code': 'CSE', 'category': 'academic', 'description': 'Undergraduate and postgraduate computer science engineering.'},
+            {'name': 'Information Science & Engineering', 'code': 'ISE', 'category': 'academic', 'description': 'Information systems, software development, and cloud computing.'},
+            {'name': 'Electronics & Communication Engineering', 'code': 'ECE', 'category': 'academic', 'description': 'Embedded systems, signal processing, and communication networks.'},
+            {'name': 'Electrical & Electronics Engineering', 'code': 'EEE', 'category': 'academic', 'description': 'Power systems, electronics, control systems, and renewable energy.'},
+            {'name': 'Artificial Intelligence & Machine Learning', 'code': 'AIML', 'category': 'academic', 'description': 'Deep learning, computer vision, NLP, and intelligent data systems.'},
+            {'name': 'Computer Science & Business Systems', 'code': 'CSBS', 'category': 'academic', 'description': 'Interdisciplinary program in computing and enterprise business systems.'},
+            {'name': 'Mechanical Engineering', 'code': 'MECH', 'category': 'academic', 'description': 'Thermodynamics, robotics, manufacturing, and mechanics.'},
+            {'name': 'Civil Engineering', 'code': 'CIVIL_ENG', 'category': 'academic', 'description': 'Structural design, construction technology, and environmental engineering.'},
         ]
 
         departments = {}
         for d in departments_data:
             dept, _ = Department.objects.get_or_create(code=d['code'], defaults=d)
+            if dept.category != d.get('category', 'facility'):
+                dept.category = d.get('category', 'facility')
+                dept.save(update_fields=['category'])
             departments[d['code']] = dept
 
-        self.stdout.write(self.style.SUCCESS(f'Created {len(departments)} departments.'))
+        self.stdout.write(self.style.SUCCESS(f'Created {len(departments)} departments (Academic + Facility).'))
 
         # 2. Create Buildings
         buildings_data = [
@@ -118,9 +132,9 @@ class Command(BaseCommand):
 
         # Students
         students_data = [
-            {'email': 'student@campusfix.edu', 'username': 'aarav_g', 'first_name': 'Aarav', 'last_name': 'Gupta', 'id': 'CS-2023-042', 'phone': '+1 555 201'},
-            {'email': 'sarah@campusfix.edu', 'username': 'sarah_j', 'first_name': 'Sarah', 'last_name': 'Jenkins', 'id': 'EC-2024-118', 'phone': '+1 555 202'},
-            {'email': 'rohan@campusfix.edu', 'username': 'rohan_v', 'first_name': 'Rohan', 'last_name': 'Verma', 'id': 'ME-2023-089', 'phone': '+1 555 203'},
+            {'email': 'student@campusfix.edu', 'username': 'aarav_g', 'first_name': 'Aarav', 'last_name': 'Gupta', 'id': 'CS-2023-042', 'phone': '+1 555 201', 'dept': 'CSE'},
+            {'email': 'sarah@campusfix.edu', 'username': 'sarah_j', 'first_name': 'Sarah', 'last_name': 'Jenkins', 'id': 'EC-2024-118', 'phone': '+1 555 202', 'dept': 'ECE'},
+            {'email': 'rohan@campusfix.edu', 'username': 'rohan_v', 'first_name': 'Rohan', 'last_name': 'Verma', 'id': 'ME-2023-089', 'phone': '+1 555 203', 'dept': 'MECH'},
         ]
 
         students = []
@@ -134,9 +148,11 @@ class Command(BaseCommand):
                     'role': 'student',
                     'identifier': st['id'],
                     'phone': st['phone'],
+                    'department': departments.get(st['dept']),
                 }
             )
             stud.set_password('student123')
+            stud.department = departments.get(st['dept'])
             stud.save()
             students.append(stud)
 

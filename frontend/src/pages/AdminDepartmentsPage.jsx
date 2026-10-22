@@ -11,6 +11,7 @@ export const AdminDepartmentsPage = () => {
   // New Department Form
   const [deptName, setDeptName] = useState('');
   const [deptCode, setDeptCode] = useState('');
+  const [deptCategory, setDeptCategory] = useState('academic');
   const [deptDesc, setDeptDesc] = useState('');
   const [addingDept, setAddingDept] = useState(false);
 
@@ -48,11 +49,13 @@ export const AdminDepartmentsPage = () => {
       const created = await departmentService.createDepartment({
         name: deptName.trim(),
         code: deptCode.trim().toUpperCase(),
+        category: deptCategory,
         description: deptDesc.trim(),
       });
       setDepartments((prev) => [...prev, created]);
       setDeptName('');
       setDeptCode('');
+      setDeptCategory('academic');
       setDeptDesc('');
     } catch (err) {
       console.error(err);
@@ -109,9 +112,18 @@ export const AdminDepartmentsPage = () => {
                 className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold font-mono text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
-                    {dept.code}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold font-mono text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                      {dept.code}
+                    </span>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      dept.category === 'academic'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {dept.category === 'academic' ? 'Academic Branch' : 'Facility Division'}
+                    </span>
+                  </div>
                   <span className="text-[11px] text-slate-400">
                     {dept.issue_count || 0} issues
                   </span>
@@ -150,6 +162,17 @@ export const AdminDepartmentsPage = () => {
                 onChange={(e) => setDeptCode(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
               />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-700 uppercase mb-1">Department Type</label>
+              <select
+                value={deptCategory}
+                onChange={(e) => setDeptCategory(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+              >
+                <option value="academic">Academic Branch (for Students)</option>
+                <option value="facility">Facility / Maintenance (for Staff)</option>
+              </select>
             </div>
             <div>
               <label className="block font-semibold text-slate-700 uppercase mb-1">Description</label>

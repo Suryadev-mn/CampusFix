@@ -18,6 +18,13 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = None
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        category = self.request.query_params.get('category') or self.request.query_params.get('type')
+        if category:
+            queryset = queryset.filter(category=category)
+        return queryset
+
 
 class BuildingViewSet(viewsets.ModelViewSet):
     queryset = Building.objects.prefetch_related('classrooms').all()

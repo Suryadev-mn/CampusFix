@@ -23,6 +23,35 @@ export const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // Academic Departments / Engineering Branches for Students
+  const defaultAcademicList = [
+    { id: 'CSE', code: 'CSE', name: 'Computer Science & Engineering' },
+    { id: 'ISE', code: 'ISE', name: 'Information Science & Engineering' },
+    { id: 'ECE', code: 'ECE', name: 'Electronics & Communication Engineering' },
+    { id: 'EEE', code: 'EEE', name: 'Electrical & Electronics Engineering' },
+    { id: 'AIML', code: 'AIML', name: 'Artificial Intelligence & Machine Learning (AI/ML)' },
+    { id: 'CSBS', code: 'CSBS', name: 'Computer Science & Business Systems (CSBS)' },
+    { id: 'MECH', code: 'MECH', name: 'Mechanical Engineering' },
+    { id: 'CIVIL_ENG', code: 'CIVIL_ENG', name: 'Civil Engineering' },
+  ];
+
+  // Maintenance & Facility Divisions for Technicians / Staff
+  const defaultFacilityList = [
+    { id: 'ELEC', code: 'ELEC', name: 'Electrical & Power Systems' },
+    { id: 'PLUMB', code: 'PLUMB', name: 'Plumbing & Water Facilities' },
+    { id: 'ITNET', code: 'ITNET', name: 'IT & Campus Network' },
+    { id: 'CIVIL', code: 'CIVIL', name: 'Civil & Furniture Works' },
+    { id: 'CLEAN', code: 'CLEAN', name: 'Housekeeping & Sanitation' },
+    { id: 'LAB', code: 'LAB', name: 'Laboratory Safety & Equipment' },
+  ];
+
+  const academicDepartments = departments.filter((d) => d.category === 'academic');
+  const facilityDepartments = departments.filter((d) => d.category === 'facility' || !d.category);
+
+  const currentDeptOptions = formData.role === 'student'
+    ? (academicDepartments.length > 0 ? academicDepartments : defaultAcademicList)
+    : (facilityDepartments.length > 0 ? facilityDepartments : defaultFacilityList);
+
   useEffect(() => {
     const fetchDepts = async () => {
       try {
@@ -104,7 +133,7 @@ export const RegisterPage = () => {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, role: 'student' })}
+                  onClick={() => setFormData((prev) => ({ ...prev, role: 'student', department_id: '' }))}
                   className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
                     formData.role === 'student'
                       ? 'border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-500/20'
@@ -115,7 +144,7 @@ export const RegisterPage = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, role: 'staff' })}
+                  onClick={() => setFormData((prev) => ({ ...prev, role: 'staff', department_id: '' }))}
                   className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
                     formData.role === 'staff'
                       ? 'border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-500/20'
@@ -182,7 +211,7 @@ export const RegisterPage = () => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Department
+                  {formData.role === 'student' ? 'Academic Branch / Dept' : 'Maintenance Division'}
                 </label>
                 <select
                   name="department_id"
@@ -190,10 +219,12 @@ export const RegisterPage = () => {
                   onChange={handleChange}
                   className="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 >
-                  <option value="">Select Department</option>
-                  {departments.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
+                  <option value="">
+                    {formData.role === 'student' ? 'Select Branch (e.g. CSE, AI/ML)' : 'Select Facility Division'}
+                  </option>
+                  {currentDeptOptions.map((d) => (
+                    <option key={d.id || d.code} value={d.id}>
+                      {d.name} {d.code ? `(${d.code})` : ''}
                     </option>
                   ))}
                 </select>

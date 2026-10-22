@@ -6,7 +6,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Department
-        fields = ['id', 'name', 'code', 'description', 'created_at', 'issue_count']
+        fields = ['id', 'name', 'code', 'category', 'description', 'created_at', 'issue_count']
 
 
 class ClassroomSerializer(serializers.ModelSerializer):

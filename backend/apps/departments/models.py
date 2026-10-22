@@ -5,8 +5,14 @@ from django.db import models
 from django.core.files.base import ContentFile
 
 class Department(models.Model):
+    CATEGORY_CHOICES = (
+        ('academic', 'Academic Branch'),
+        ('facility', 'Facility / Maintenance'),
+    )
+
     name = models.CharField(max_length=100, unique=True)
     code = models.CharField(max_length=20, unique=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='facility')
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
